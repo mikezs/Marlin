@@ -134,9 +134,13 @@
 // Name displayed in the LCD "Ready" message and Info menu
 #define CUSTOM_MACHINE_NAME "DMYCO 3DP v1.0"
 
+#define SHORT_BUILD_VERSION "mike-config"
+#define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION
+#define SOURCE_CODE_URL "https://github.com/mikezs/Marlin-DMYCO-3DP-P802MA"
+
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4
-//#define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
+#define MACHINE_UUID "8674953f-5fca-42b3-b08f-7bfdca104bca"
 
 // @section extruder
 
