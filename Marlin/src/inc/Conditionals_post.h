@@ -143,7 +143,9 @@
  */
 #if IS_SCARA
   #undef SLOWDOWN
-  #define QUICK_HOME
+  #if DISABLED(AXEL_TPARA)
+    #define QUICK_HOME
+  #endif
   #define SCARA_PRINTABLE_RADIUS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
 #endif
 
@@ -488,6 +490,90 @@
 #endif
 #if TEMP_SENSOR_0_IS_MAX6675 || TEMP_SENSOR_1_IS_MAX6675
   #define HAS_MAX6675 1
+#endif
+
+//
+// Compatibility layer for MAX (SPI) temp boards
+//
+#if PIN_EXISTS(MAX6675_SS)
+  #if TEMP_SENSOR_0_IS_MAX31855
+    #define MAX31855_CS_PIN MAX6675_SS_PIN
+  #elif TEMP_SENSOR_0_IS_MAX31865
+    #define MAX31865_CS_PIN MAX6675_SS_PIN
+  #elif TEMP_SENSOR_0_IS_MAX6675
+    #define MAX6675_CS_PIN MAX6675_SS_PIN
+  #endif
+#endif
+
+#if PIN_EXISTS(MAX6675_SS2)
+  #if TEMP_SENSOR_1_IS_MAX31855
+    #define MAX31855_CS2_PIN MAX6675_SS2_PIN
+  #elif TEMP_SENSOR_1_IS_MAX31865
+    #define MAX31865_CS2_PIN MAX6675_SS2_PIN
+  #elif TEMP_SENSOR_1_IS_MAX6675
+    #define MAX6675_CS2_PIN MAX6675_SS2_PIN
+  #endif
+#endif
+
+#if PIN_EXISTS(MAX6675_DO)
+  #if HAS_MAX31855
+    #define MAX31855_MISO_PIN MAX6675_DO_PIN
+  #elif HAS_MAX31865
+    #define MAX31865_MISO_PIN MAX6675_DO_PIN
+  #elif HAS_MAX6675
+    #define MAX6675_MISO_PIN MAX6675_DO_PIN
+  #endif
+#endif
+
+#if PIN_EXISTS(MAX6675_SCK)
+  #if HAS_MAX31855
+    #define MAX31855_SCK_PIN MAX6675_SCK_PIN
+  #elif HAS_MAX31865
+    #define MAX31865_SCK_PIN MAX6675_SCK_PIN
+  #endif
+#endif
+
+// Compatibility Layer for use when HAL manipulates PINS for MAX31855 and MAX6675
+#if PIN_EXISTS(MAX31855_CS) && !PIN_EXISTS(MAX6675_SS)
+  #define MAX6675_SS_PIN MAX31855_CS_PIN
+#endif
+#if PIN_EXISTS(MAX31855_CS2) && !PIN_EXISTS(MAX6675_SS2)
+  #define MAX6675_SS2_PIN MAX31855_CS2_PIN
+#endif
+#if PIN_EXISTS(MAX6675_CS) && !PIN_EXISTS(MAX6675_SS)
+  #define MAX6675_SS_PIN MAX6675_CS_PIN
+#endif
+#if PIN_EXISTS(MAX6675_CS2) && !PIN_EXISTS(MAX6675_SS2)
+  #define MAX6675_SS2_PIN MAX6675_CS2_PIN
+#endif
+#if PIN_EXISTS(MAX31855_MISO) && !PIN_EXISTS(MAX6675_DO)
+  #define MAX6675_DO_PIN MAX31855_MISO_PIN
+#endif
+#if PIN_EXISTS(MAX6675_MISO) && !PIN_EXISTS(MAX6675_DO)
+  #define MAX6675_DO_PIN MAX6675_MISO_PIN
+#endif
+#if PIN_EXISTS(MAX31855_SCK) && !PIN_EXISTS(MAX6675_SCK)
+  #define MAX6675_SCK_PIN MAX31855_SCK_PIN
+#endif
+
+//
+// User-defined thermocouple libraries
+//
+// Add LIB_MAX6675 / LIB_MAX31855 / LIB_MAX31865 to the build_flags
+// to select a USER library for MAX6675, MAX31855, MAX31865
+//
+#if BOTH(HAS_MAX6675, LIB_MAX6675)
+  #define LIB_USR_MAX6675 1
+#endif
+#if BOTH(HAS_MAX31855, LIB_MAX31855)
+  #define LIB_USR_MAX31855 1
+#endif
+#if HAS_MAX31865
+  #if ENABLED(LIB_MAX31865)
+    #define LIB_USR_MAX31865 1
+  #else
+    #define LIB_ADAFRUIT_MAX31865 1
+  #endif
 #endif
 
 #if TEMP_SENSOR_2 == -4
@@ -1908,26 +1994,30 @@
     #define BED_OVERSHOOT 10
   #endif
   #define BED_MAX_TARGET (BED_MAXTEMP - (BED_OVERSHOOT))
+#else
+  #undef PIDTEMPBED
 #endif
+
 #if HAS_HEATED_BED || HAS_TEMP_CHAMBER
   #define BED_OR_CHAMBER 1
 #endif
 #if HAS_TEMP_HOTEND || BED_OR_CHAMBER || HAS_TEMP_PROBE
   #define HAS_TEMP_SENSOR 1
 #endif
+
 #if HAS_TEMP_CHAMBER && PIN_EXISTS(HEATER_CHAMBER)
   #define HAS_HEATED_CHAMBER 1
+  #ifndef CHAMBER_OVERSHOOT
+    #define CHAMBER_OVERSHOOT 10
+  #endif
+  #define CHAMBER_MAX_TARGET (CHAMBER_MAXTEMP - (CHAMBER_OVERSHOOT))
+#else
+  #undef PIDTEMPCHAMBER
 #endif
 
 // PID heating
-#if !HAS_HEATED_BED
-  #undef PIDTEMPBED
-#endif
-#if EITHER(PIDTEMP, PIDTEMPBED)
+#if ANY(PIDTEMP, PIDTEMPBED, PIDTEMPCHAMBER)
   #define HAS_PID_HEATING 1
-#endif
-#if BOTH(PIDTEMP, PIDTEMPBED)
-  #define HAS_PID_FOR_BOTH 1
 #endif
 
 // Thermal protection
@@ -2262,6 +2352,9 @@
  * Heated chamber requires settings
  */
 #if HAS_HEATED_CHAMBER
+  #ifndef MIN_CHAMBER_POWER
+    #define MIN_CHAMBER_POWER 0
+  #endif
   #ifndef MAX_CHAMBER_POWER
     #define MAX_CHAMBER_POWER 255
   #endif
@@ -2287,6 +2380,10 @@
   #elif defined(PREHEAT_1_LABEL)
     #define PREHEAT_COUNT 1
   #endif
+#endif
+
+#if !PREHEAT_COUNT
+  #undef PREHEAT_SHORTCUT_MENU_ITEM
 #endif
 
 /**
@@ -2384,8 +2481,8 @@
   #ifndef Z_PROBE_OFFSET_RANGE_MAX
     #define Z_PROBE_OFFSET_RANGE_MAX 20
   #endif
-  #ifndef XY_PROBE_SPEED
-    #define XY_PROBE_SPEED ((homing_feedrate_mm_m.x + homing_feedrate_mm_m.y) / 2)
+  #ifndef XY_PROBE_FEEDRATE
+    #define XY_PROBE_FEEDRATE ((homing_feedrate_mm_m.x + homing_feedrate_mm_m.y) / 2)
   #endif
   #ifndef NOZZLE_TO_PROBE_OFFSET
     #define NOZZLE_TO_PROBE_OFFSET { 0, 0, 0 }
@@ -2674,7 +2771,7 @@
 
 // Add commands that need sub-codes to this list
 #if ANY(G38_PROBE_TARGET, CNC_COORDINATE_SYSTEMS, POWER_LOSS_RECOVERY)
-  #define USE_GCODE_SUBCODES
+  #define USE_GCODE_SUBCODES 1
 #endif
 
 // Parking Extruder

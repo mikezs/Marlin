@@ -47,39 +47,102 @@
   #include "../lcd/extui/ui_api.h"
 #endif
 
+// LIB_MAX31855 can be added to the build_flags in platformio.ini to use a user-defined library
+#if LIB_USR_MAX31855
+  #include <Adafruit_MAX31855.h>
+  #if PIN_EXISTS(MAX31855_MISO) && PIN_EXISTS(MAX31855_SCK)
+    #define MAX31855_USES_SW_SPI 1
+  #endif
+  #if TEMP_SENSOR_0_IS_MAX31855 && PIN_EXISTS(MAX31855_CS)
+    #define HAS_MAX31855_TEMP 1
+    Adafruit_MAX31855 max31855_0 = Adafruit_MAX31855(MAX31855_CS_PIN
+      #if MAX31855_USES_SW_SPI
+        , MAX31855_MISO_PIN, MAX31855_SCK_PIN  // For software SPI also set MISO/SCK
+      #endif
+      #if ENABLED(LARGE_PINMAP)
+        , HIGH
+      #endif
+    );
+  #endif
+  #if TEMP_SENSOR_1_IS_MAX31855 && PIN_EXISTS(MAX31855_CS2)
+    #define HAS_MAX31855_TEMP 1
+    Adafruit_MAX31855 max31855_1 = Adafruit_MAX31855(MAX31855_CS2_PIN
+      #if MAX31855_USES_SW_SPI
+        , MAX31855_MISO_PIN, MAX31855_SCK_PIN  // For software SPI also set MISO/SCK
+      #endif
+      #if ENABLED(LARGE_PINMAP)
+        , HIGH
+      #endif
+    );
+  #endif
+#endif
+
+// LIB_MAX31865 can be added to the build_flags in platformio.ini to use a user-defined library.
+// If LIB_MAX31865 is not on the build_flags then the Adafruit MAX31865 V1.1.0 library is used.
 #if HAS_MAX31865
   #include <Adafruit_MAX31865.h>
-  #if TEMP_SENSOR_0_IS_MAX31865 && !defined(MAX31865_CS_PIN) && PIN_EXISTS(MAX6675_SS)
-    #define MAX31865_CS_PIN   MAX6675_SS_PIN
-  #endif
-  #if TEMP_SENSOR_1_IS_MAX31865 && !defined(MAX31865_CS2_PIN) && PIN_EXISTS(MAX6675_SS2)
-    #define MAX31865_CS2_PIN  MAX6675_SS2_PIN
-  #endif
   #ifndef MAX31865_MOSI_PIN
     #define MAX31865_MOSI_PIN SD_MOSI_PIN
   #endif
-  #ifndef MAX31865_MISO_PIN
-    #define MAX31865_MISO_PIN MAX6675_DO_PIN
-  #endif
-  #ifndef MAX31865_SCK_PIN
-    #define MAX31865_SCK_PIN  MAX6675_SCK_PIN
+  #if PIN_EXISTS(MAX31865_MISO) && PIN_EXISTS(MAX31865_SCK)
+    #define MAX31865_USES_SW_SPI 1
   #endif
   #if TEMP_SENSOR_0_IS_MAX31865 && PIN_EXISTS(MAX31865_CS)
     #define HAS_MAX31865_TEMP 1
-    Adafruit_MAX31865 max31865_0 = Adafruit_MAX31865(MAX31865_CS_PIN
-      #if MAX31865_CS_PIN != MAX6675_SS_PIN
-        , MAX31865_MOSI_PIN, MAX31865_MISO_PIN, MAX31865_SCK_PIN // For software SPI also set MOSI/MISO/SCK
-      #endif
-    );
+      Adafruit_MAX31865 max31865_0 = Adafruit_MAX31865(MAX31865_CS_PIN
+        #if MAX31865_USES_SW_SPI && PIN_EXISTS(MAX31865_MOSI)
+          , MAX31865_MOSI_PIN, MAX31865_MISO_PIN, MAX31865_SCK_PIN  // For software SPI also set MOSI/MISO/SCK
+        #endif
+        #if ENABLED(LARGE_PINMAP)
+          , HIGH
+        #endif
+      );
   #endif
   #if TEMP_SENSOR_1_IS_MAX31865 && PIN_EXISTS(MAX31865_CS2)
     #define HAS_MAX31865_TEMP 1
     Adafruit_MAX31865 max31865_1 = Adafruit_MAX31865(MAX31865_CS2_PIN
-      #if MAX31865_CS2_PIN != MAX6675_SS2_PIN
-        , MAX31865_MOSI_PIN, MAX31865_MISO_PIN, MAX31865_SCK_PIN // For software SPI also set MOSI/MISO/SCK
+      #if MAX31865_USES_SW_SPI && PIN_EXISTS(MAX31865_MOSI)
+        , MAX31865_MOSI_PIN, MAX31865_MISO_PIN, MAX31865_SCK_PIN  // For software SPI also set MOSI/MISO/SCK
+      #endif
+      #if ENABLED(LARGE_PINMAP)
+        , HIGH
       #endif
     );
   #endif
+#endif
+
+// LIB_MAX6675 can be added to the build_flags in platformio.ini to use a user-defined library
+#if LIB_USR_MAX6675
+  #include <max6675.h>
+  #if PIN_EXISTS(MAX6675_MISO) && PIN_EXISTS(MAX6675_SCK)
+    #define MAX6675_USES_SW_SPI 1
+  #endif
+  #if TEMP_SENSOR_0_IS_MAX6675 && PIN_EXISTS(MAX6675_CS)
+    #define HAS_MAX6675_TEMP 1
+    MAX6675 max6675_0 = MAX6675(MAX6675_CS_PIN
+      #if MAX6675_USES_SW_SPI
+        , MAX6675_MISO_PIN, MAX6675_SCK_PIN   // For software SPI also set MISO/SCK
+      #endif
+      #if ENABLED(LARGE_PINMAP)
+        , HIGH
+      #endif
+    );
+  #endif
+  #if TEMP_SENSOR_1_IS_MAX6675 && PIN_EXISTS(MAX6675_CS2)
+    #define HAS_MAX6675_TEMP 1
+    MAX6675 max6675_1 = MAX6675(MAX6675_CS2_PIN
+      #if MAX6675_USES_SW_SPI
+        , MAX6675_MISO_PIN, MAX6675_SCK_PIN   // For software SPI also set MISO/SCK
+      #endif
+      #if ENABLED(LARGE_PINMAP)
+        , HIGH
+      #endif
+    );
+  #endif
+#endif
+
+#if !HAS_MAX6675_TEMP && !HAS_MAX31855_TEMP && !HAS_MAX31865_TEMP
+  #define NO_THERMO_TEMPS 1
 #endif
 
 #if (TEMP_SENSOR_0_IS_MAX_TC || TEMP_SENSOR_1_IS_MAX_TC) && PINS_EXIST(MAX6675_SCK, MAX6675_DO) && NO_THERMO_TEMPS
@@ -308,20 +371,13 @@ const char str_t_thermal_runaway[] PROGMEM = STR_T_THERMAL_RUNAWAY,
     #ifdef CHAMBER_MAXTEMP
       int16_t Temperature::maxtemp_raw_CHAMBER = TEMP_SENSOR_CHAMBER_RAW_HI_TEMP;
     #endif
-    #if WATCH_CHAMBER
-      chamber_watch_t Temperature::watch_chamber{0};
-    #endif
-    millis_t Temperature::next_chamber_check_ms;
+    TERN_(WATCH_CHAMBER, chamber_watch_t Temperature::watch_chamber{0});
+    IF_DISABLED(PIDTEMPCHAMBER, millis_t Temperature::next_chamber_check_ms);
   #endif // HAS_HEATED_CHAMBER
 #endif // HAS_TEMP_CHAMBER
 
 #if HAS_TEMP_PROBE
   probe_info_t Temperature::temp_probe; // = { 0 }
-#endif
-
-// Initialized by settings.load()
-#if ENABLED(PIDTEMP)
-  //hotend_pid_t Temperature::pid[HOTENDS];
 #endif
 
 #if ENABLED(PREVENT_COLD_EXTRUSION)
@@ -422,41 +478,44 @@ volatile bool Temperature::raw_temps_ready = false;
     millis_t next_temp_ms = millis(), t1 = next_temp_ms, t2 = next_temp_ms;
     long t_high = 0, t_low = 0;
 
-    long bias, d;
     PID_t tune_pid = { 0, 0, 0 };
     float maxT = 0, minT = 10000;
 
     const bool isbed = (heater_id == H_BED);
+    const bool ischamber = (heater_id == H_CHAMBER);
 
-    #if HAS_PID_FOR_BOTH
-      #define GHV(B,H) (isbed ? (B) : (H))
-      #define SHV(B,H) do{ if (isbed) temp_bed.soft_pwm_amount = B; else temp_hotend[heater_id].soft_pwm_amount = H; }while(0)
-      #define ONHEATINGSTART() (isbed ? printerEventLEDs.onBedHeatingStart() : printerEventLEDs.onHotendHeatingStart())
-      #define ONHEATING(S,C,T) (isbed ? printerEventLEDs.onBedHeating(S,C,T) : printerEventLEDs.onHotendHeating(S,C,T))
-    #elif ENABLED(PIDTEMPBED)
-      #define GHV(B,H) B
-      #define SHV(B,H) (temp_bed.soft_pwm_amount = B)
-      #define ONHEATINGSTART() printerEventLEDs.onBedHeatingStart()
-      #define ONHEATING(S,C,T) printerEventLEDs.onBedHeating(S,C,T)
+    #if ENABLED(PIDTEMPCHAMBER)
+      #define C_TERN(T,A,B) ((T) ? (A) : (B))
     #else
-      #define GHV(B,H) H
-      #define SHV(B,H) (temp_hotend[heater_id].soft_pwm_amount = H)
-      #define ONHEATINGSTART() printerEventLEDs.onHotendHeatingStart()
-      #define ONHEATING(S,C,T) printerEventLEDs.onHotendHeating(S,C,T)
+      #define C_TERN(T,A,B) (B)
     #endif
-    #define WATCH_PID BOTH(WATCH_BED, PIDTEMPBED) || BOTH(WATCH_HOTENDS, PIDTEMP)
+    #if ENABLED(PIDTEMPBED)
+      #define B_TERN(T,A,B) ((T) ? (A) : (B))
+    #else
+      #define B_TERN(T,A,B) (B)
+    #endif
+    #define GHV(C,B,H) C_TERN(ischamber, C, B_TERN(isbed, B, H))
+    #define SHV(V) C_TERN(ischamber, temp_chamber.soft_pwm_amount = V, B_TERN(isbed, temp_bed.soft_pwm_amount = V, temp_hotend[heater_id].soft_pwm_amount = V))
+    #define ONHEATINGSTART() C_TERN(ischamber, printerEventLEDs.onChamberHeatingStart(), B_TERN(isbed, printerEventLEDs.onBedHeatingStart(), printerEventLEDs.onHotendHeatingStart()))
+    #define ONHEATING(S,C,T) C_TERN(ischamber, printerEventLEDs.onChamberHeating(S,C,T), B_TERN(isbed, printerEventLEDs.onBedHeating(S,C,T), printerEventLEDs.onHotendHeating(S,C,T)))
+
+    #define WATCH_PID BOTH(WATCH_CHAMBER, PIDTEMPCHAMBER) || BOTH(WATCH_BED, PIDTEMPBED) || BOTH(WATCH_HOTENDS, PIDTEMP)
 
     #if WATCH_PID
-      #if ALL(THERMAL_PROTECTION_HOTENDS, PIDTEMP, THERMAL_PROTECTION_BED, PIDTEMPBED)
-        #define GTV(B,H) (isbed ? (B) : (H))
-      #elif BOTH(THERMAL_PROTECTION_HOTENDS, PIDTEMP)
-        #define GTV(B,H) (H)
+      #if BOTH(THERMAL_PROTECTION_CHAMBER, PIDTEMPCHAMBER)
+        #define C_GTV(T,A,B) ((T) ? (A) : (B))
       #else
-        #define GTV(B,H) (B)
+        #define C_GTV(T,A,B) (B)
       #endif
-      const uint16_t watch_temp_period = GTV(WATCH_BED_TEMP_PERIOD, WATCH_TEMP_PERIOD);
-      const uint8_t watch_temp_increase = GTV(WATCH_BED_TEMP_INCREASE, WATCH_TEMP_INCREASE);
-      const float watch_temp_target = target - float(watch_temp_increase + GTV(TEMP_BED_HYSTERESIS, TEMP_HYSTERESIS) + 1);
+      #if BOTH(THERMAL_PROTECTION_BED, PIDTEMPBED)
+        #define B_GTV(T,A,B) ((T) ? (A) : (B))
+      #else
+        #define B_GTV(T,A,B) (B)
+      #endif
+      #define GTV(C,B,H) C_GTV(ischamber, C, B_GTV(isbed, B, H))
+      const uint16_t watch_temp_period = GTV(WATCH_CHAMBER_TEMP_PERIOD, WATCH_BED_TEMP_PERIOD, WATCH_TEMP_PERIOD);
+      const uint8_t watch_temp_increase = GTV(WATCH_CHAMBER_TEMP_INCREASE, WATCH_BED_TEMP_INCREASE, WATCH_TEMP_INCREASE);
+      const float watch_temp_target = target - float(watch_temp_increase + GTV(TEMP_CHAMBER_HYSTERESIS, TEMP_BED_HYSTERESIS, TEMP_HYSTERESIS) + 1);
       millis_t temp_change_ms = next_temp_ms + SEC_TO_MS(watch_temp_period);
       float next_watch_temp = 0.0;
       bool heated = false;
@@ -464,7 +523,7 @@ volatile bool Temperature::raw_temps_ready = false;
 
     TERN_(HAS_AUTO_FAN, next_auto_fan_check_ms = next_temp_ms + 2500UL);
 
-    if (target > GHV(BED_MAX_TARGET, temp_range[heater_id].maxtemp - HOTEND_OVERSHOOT)) {
+    if (target > GHV(CHAMBER_MAX_TARGET, BED_MAX_TARGET, temp_range[heater_id].maxtemp - HOTEND_OVERSHOOT)) {
       SERIAL_ECHOLNPGM(STR_PID_TEMP_TOO_HIGH);
       TERN_(EXTENSIBLE_UI, ExtUI::onPidTuning(ExtUI::result_t::PID_TEMP_TOO_HIGH));
       return;
@@ -475,10 +534,11 @@ volatile bool Temperature::raw_temps_ready = false;
     disable_all_heaters();
     TERN_(AUTO_POWER_CONTROL, powerManager.power_on());
 
-    SHV(bias = d = (MAX_BED_POWER) >> 1, bias = d = (PID_MAX) >> 1);
+    long bias = GHV(MAX_CHAMBER_POWER, MAX_BED_POWER, PID_MAX) >> 1, d = bias;
+    SHV(bias);
 
     #if ENABLED(PRINTER_EVENT_LEDS)
-      const float start_temp = GHV(temp_bed.celsius, temp_hotend[heater_id].celsius);
+      const float start_temp = GHV(temp_chamber.celsius, temp_bed.celsius, temp_hotend[heater_id].celsius);
       LEDColor color = ONHEATINGSTART();
     #endif
 
@@ -494,7 +554,7 @@ volatile bool Temperature::raw_temps_ready = false;
         updateTemperaturesFromRawValues();
 
         // Get the current temperature and constrain it
-        current_temp = GHV(temp_bed.celsius, temp_hotend[heater_id].celsius);
+        current_temp = GHV(temp_chamber.celsius, temp_bed.celsius, temp_hotend[heater_id].celsius);
         NOLESS(maxT, current_temp);
         NOMORE(minT, current_temp);
 
@@ -509,67 +569,46 @@ volatile bool Temperature::raw_temps_ready = false;
           }
         #endif
 
-        if (heating && current_temp > target) {
-          if (ELAPSED(ms, t2 + 5000UL)) {
-            heating = false;
-            SHV((bias - d) >> 1, (bias - d) >> 1);
-            t1 = ms;
-            t_high = t1 - t2;
-            maxT = target;
-          }
+        if (heating && current_temp > target && ELAPSED(ms, t2 + 5000UL)) {
+          heating = false;
+          SHV((bias - d) >> 1);
+          t1 = ms;
+          t_high = t1 - t2;
+          maxT = target;
         }
 
-        if (!heating && current_temp < target) {
-          if (ELAPSED(ms, t1 + 5000UL)) {
-            heating = true;
-            t2 = ms;
-            t_low = t2 - t1;
-            if (cycles > 0) {
-              const long max_pow = GHV(MAX_BED_POWER, PID_MAX);
-              bias += (d * (t_high - t_low)) / (t_low + t_high);
-              LIMIT(bias, 20, max_pow - 20);
-              d = (bias > max_pow >> 1) ? max_pow - 1 - bias : bias;
+        if (!heating && current_temp < target && ELAPSED(ms, t1 + 5000UL)) {
+          heating = true;
+          t2 = ms;
+          t_low = t2 - t1;
+          if (cycles > 0) {
+            const long max_pow = GHV(MAX_CHAMBER_POWER, MAX_BED_POWER, PID_MAX);
+            bias += (d * (t_high - t_low)) / (t_low + t_high);
+            LIMIT(bias, 20, max_pow - 20);
+            d = (bias > max_pow >> 1) ? max_pow - 1 - bias : bias;
 
-              SERIAL_ECHOPAIR(STR_BIAS, bias, STR_D_COLON, d, STR_T_MIN, minT, STR_T_MAX, maxT);
-              if (cycles > 2) {
-                const float Ku = (4.0f * d) / (float(M_PI) * (maxT - minT) * 0.5f),
-                            Tu = float(t_low + t_high) * 0.001f,
-                            pf = isbed ? 0.2f : 0.6f,
-                            df = isbed ? 1.0f / 3.0f : 1.0f / 8.0f;
+            SERIAL_ECHOPAIR(STR_BIAS, bias, STR_D_COLON, d, STR_T_MIN, minT, STR_T_MAX, maxT);
+            if (cycles > 2) {
+              const float Ku = (4.0f * d) / (float(M_PI) * (maxT - minT) * 0.5f),
+                          Tu = float(t_low + t_high) * 0.001f,
+                          pf = ischamber ? 0.2f : (isbed ? 0.2f : 0.6f),
+                          df = ischamber ? 1.0f / 3.0f : (isbed ? 1.0f / 3.0f : 1.0f / 8.0f);
 
-                SERIAL_ECHOPAIR(STR_KU, Ku, STR_TU, Tu);
-                if (isbed) { // Do not remove this otherwise PID autotune won't work right for the bed!
-                  tune_pid.Kp = Ku * 0.2f;
-                  tune_pid.Ki = 2 * tune_pid.Kp / Tu;
-                  tune_pid.Kd = tune_pid.Kp * Tu / 3;
-                  SERIAL_ECHOLNPGM("\n" " No overshoot"); // Works far better for the bed. Classic and some have bad ringing.
-                  SERIAL_ECHOLNPAIR(STR_KP, tune_pid.Kp, STR_KI, tune_pid.Ki, STR_KD, tune_pid.Kd);
-                }
-                else {
-                  tune_pid.Kp = Ku * pf;
-                  tune_pid.Kd = tune_pid.Kp * Tu * df;
-                  tune_pid.Ki = 2 * tune_pid.Kp / Tu;
-                  SERIAL_ECHOLNPGM("\n" STR_CLASSIC_PID);
-                  SERIAL_ECHOLNPAIR(STR_KP, tune_pid.Kp, STR_KI, tune_pid.Ki, STR_KD, tune_pid.Kd);
-                }
+              tune_pid.Kp = Ku * pf;
+              tune_pid.Ki = tune_pid.Kp * 2.0f / Tu;
+              tune_pid.Kd = tune_pid.Kp * Tu * df;
 
-                /**
-                tune_pid.Kp = 0.33 * Ku;
-                tune_pid.Ki = tune_pid.Kp / Tu;
-                tune_pid.Kd = tune_pid.Kp * Tu / 3;
-                SERIAL_ECHOLNPGM(" Some overshoot");
-                SERIAL_ECHOLNPAIR(" Kp: ", tune_pid.Kp, " Ki: ", tune_pid.Ki, " Kd: ", tune_pid.Kd, " No overshoot");
-                tune_pid.Kp = 0.2 * Ku;
-                tune_pid.Ki = 2 * tune_pid.Kp / Tu;
-                tune_pid.Kd = tune_pid.Kp * Tu / 3;
-                SERIAL_ECHOPAIR(" Kp: ", tune_pid.Kp, " Ki: ", tune_pid.Ki, " Kd: ", tune_pid.Kd);
-                */
-              }
+              SERIAL_ECHOLNPAIR(STR_KU, Ku, STR_TU, Tu);
+              if (ischamber || isbed)
+                SERIAL_ECHOLNPGM(" No overshoot");
+              else
+                SERIAL_ECHOLNPGM(STR_CLASSIC_PID);
+              SERIAL_ECHOLNPAIR(STR_KP, tune_pid.Kp, STR_KI, tune_pid.Ki, STR_KD, tune_pid.Kd);
             }
-            SHV((bias + d) >> 1, (bias + d) >> 1);
-            cycles++;
-            minT = target;
           }
+          SHV((bias + d) >> 1);
+          cycles++;
+          minT = target;
         }
       }
 
@@ -586,14 +625,14 @@ volatile bool Temperature::raw_temps_ready = false;
       // Report heater states every 2 seconds
       if (ELAPSED(ms, next_temp_ms)) {
         #if HAS_TEMP_SENSOR
-          print_heater_states(isbed ? active_extruder : heater_id);
+          print_heater_states(ischamber ? active_extruder : (isbed ? active_extruder : heater_id));
           SERIAL_EOL();
         #endif
         next_temp_ms = ms + 2000UL;
 
         // Make sure heating is actually working
         #if WATCH_PID
-          if (BOTH(WATCH_BED, WATCH_HOTENDS) || isbed == DISABLED(WATCH_HOTENDS)) {
+          if (BOTH(WATCH_BED, WATCH_HOTENDS) || isbed == DISABLED(WATCH_HOTENDS) || ischamber == DISABLED(WATCH_HOTENDS)) {
             if (!heated) {                                            // If not yet reached target...
               if (current_temp > next_watch_temp) {                   // Over the watch temp?
                 next_watch_temp = current_temp + watch_temp_increase; // - set the next temp to watch for
@@ -623,43 +662,47 @@ volatile bool Temperature::raw_temps_ready = false;
       if (cycles > ncycles && cycles > 2) {
         SERIAL_ECHOLNPGM(STR_PID_AUTOTUNE_FINISHED);
 
-        #if HAS_PID_FOR_BOTH
-          const char * const estring = GHV(PSTR("bed"), NUL_STR);
-          say_default_(); serialprintPGM(estring); SERIAL_ECHOLNPAIR("Kp ", tune_pid.Kp);
-          say_default_(); serialprintPGM(estring); SERIAL_ECHOLNPAIR("Ki ", tune_pid.Ki);
-          say_default_(); serialprintPGM(estring); SERIAL_ECHOLNPAIR("Kd ", tune_pid.Kd);
-        #elif ENABLED(PIDTEMP)
+        #if EITHER(PIDTEMPBED, PIDTEMPCHAMBER)
+          PGM_P const estring = GHV(PSTR("chamber"), PSTR("bed"), NUL_STR);
+          say_default_(); SERIAL_ECHOPGM_P(estring); SERIAL_ECHOLNPAIR("Kp ", tune_pid.Kp);
+          say_default_(); SERIAL_ECHOPGM_P(estring); SERIAL_ECHOLNPAIR("Ki ", tune_pid.Ki);
+          say_default_(); SERIAL_ECHOPGM_P(estring); SERIAL_ECHOLNPAIR("Kd ", tune_pid.Kd);
+        #else
           say_default_(); SERIAL_ECHOLNPAIR("Kp ", tune_pid.Kp);
           say_default_(); SERIAL_ECHOLNPAIR("Ki ", tune_pid.Ki);
           say_default_(); SERIAL_ECHOLNPAIR("Kd ", tune_pid.Kd);
-        #else
-          say_default_(); SERIAL_ECHOLNPAIR("bedKp ", tune_pid.Kp);
-          say_default_(); SERIAL_ECHOLNPAIR("bedKi ", tune_pid.Ki);
-          say_default_(); SERIAL_ECHOLNPAIR("bedKd ", tune_pid.Kd);
         #endif
 
-        #define _SET_BED_PID() do { \
-          temp_bed.pid.Kp = tune_pid.Kp; \
-          temp_bed.pid.Ki = scalePID_i(tune_pid.Ki); \
-          temp_bed.pid.Kd = scalePID_d(tune_pid.Kd); \
-        }while(0)
+        auto _set_hotend_pid = [](const uint8_t e, const PID_t &in_pid) {
+          #if ENABLED(PIDTEMP)
+            PID_PARAM(Kp, e) = in_pid.Kp;
+            PID_PARAM(Ki, e) = scalePID_i(in_pid.Ki);
+            PID_PARAM(Kd, e) = scalePID_d(in_pid.Kd);
+            updatePID();
+          #else
+            UNUSED(e); UNUSED(in_pid);
+          #endif
+        };
 
-        #define _SET_EXTRUDER_PID() do { \
-          PID_PARAM(Kp, heater_id) = tune_pid.Kp; \
-          PID_PARAM(Ki, heater_id) = scalePID_i(tune_pid.Ki); \
-          PID_PARAM(Kd, heater_id) = scalePID_d(tune_pid.Kd); \
-          updatePID(); }while(0)
+        #if ENABLED(PIDTEMPBED)
+          auto _set_bed_pid = [](const PID_t &in_pid) {
+            temp_bed.pid.Kp = in_pid.Kp;
+            temp_bed.pid.Ki = scalePID_i(in_pid.Ki);
+            temp_bed.pid.Kd = scalePID_d(in_pid.Kd);
+          };
+        #endif
+
+        #if ENABLED(PIDTEMPCHAMBER)
+          auto _set_chamber_pid = [](const PID_t &in_pid) {
+            temp_chamber.pid.Kp = in_pid.Kp;
+            temp_chamber.pid.Ki = scalePID_i(in_pid.Ki);
+            temp_chamber.pid.Kd = scalePID_d(in_pid.Kd);
+          };
+        #endif
 
         // Use the result? (As with "M303 U1")
-        if (set_result) {
-          #if HAS_PID_FOR_BOTH
-            if (isbed) _SET_BED_PID(); else _SET_EXTRUDER_PID();
-          #elif ENABLED(PIDTEMP)
-            _SET_EXTRUDER_PID();
-          #else
-            _SET_BED_PID();
-          #endif
-        }
+        if (set_result)
+          GHV(_set_chamber_pid(tune_pid), _set_bed_pid(tune_pid), _set_hotend_pid(heater_id, tune_pid));
 
         TERN_(PRINTER_EVENT_LEDS, printerEventLEDs.onPidTuningDone(color));
 
@@ -825,7 +868,7 @@ void Temperature::_temp_error(const heater_id_t heater_id, PGM_P const serial_ms
 
   if (IsRunning() && TERN1(BOGUS_TEMPERATURE_GRACE_PERIOD, killed == 2)) {
     SERIAL_ERROR_START();
-    serialprintPGM(serial_msg);
+    SERIAL_ECHOPGM_P(serial_msg);
     SERIAL_ECHOPGM(STR_STOPPED_HEATER);
     if (heater_id >= 0)
       SERIAL_ECHO(heater_id);
@@ -876,10 +919,11 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
   _temp_error(heater_id, PSTR(STR_T_MINTEMP), GET_TEXT(MSG_ERR_MINTEMP));
 }
 
+#if ANY(PID_DEBUG, PID_BED_DEBUG, PID_CHAMBER_DEBUG)
+  bool Temperature::pid_debug_flag; // = 0
+#endif
+
 #if HAS_HOTEND
-  #if ENABLED(PID_DEBUG)
-    extern bool pid_debug_flag;
-  #endif
 
   float Temperature::get_pid_output_hotend(const uint8_t E_NAME) {
     const uint8_t ee = HOTEND_INDEX;
@@ -960,23 +1004,18 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
 
       #if ENABLED(PID_DEBUG)
         if (ee == active_extruder && pid_debug_flag) {
-          SERIAL_ECHO_START();
-          SERIAL_ECHOPAIR(STR_PID_DEBUG, ee, STR_PID_DEBUG_INPUT, temp_hotend[ee].celsius, STR_PID_DEBUG_OUTPUT, pid_output);
-          #if DISABLED(PID_OPENLOOP)
-          {
-            SERIAL_ECHOPAIR(
-              STR_PID_DEBUG_PTERM, work_pid[ee].Kp,
-              STR_PID_DEBUG_ITERM, work_pid[ee].Ki,
-              STR_PID_DEBUG_DTERM, work_pid[ee].Kd
+          SERIAL_ECHO_MSG(STR_PID_DEBUG, ee, STR_PID_DEBUG_INPUT, temp_hotend[ee].celsius, STR_PID_DEBUG_OUTPUT, pid_output
+            #if DISABLED(PID_OPENLOOP)
+              , STR_PID_DEBUG_PTERM, work_pid[ee].Kp
+              , STR_PID_DEBUG_ITERM, work_pid[ee].Ki
+              , STR_PID_DEBUG_DTERM, work_pid[ee].Kd
               #if ENABLED(PID_EXTRUSION_SCALING)
                 , STR_PID_DEBUG_CTERM, work_pid[ee].Kc
               #endif
-            );
-          }
-          #endif
-          SERIAL_EOL();
+            #endif
+          );
         }
-      #endif // PID_DEBUG
+      #endif
 
     #else // No PID enabled
 
@@ -1036,13 +1075,76 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
     #endif // PID_OPENLOOP
 
     #if ENABLED(PID_BED_DEBUG)
+      if (pid_debug_flag) {
+        SERIAL_ECHO_MSG(
+          " PID_BED_DEBUG : Input ", temp_bed.celsius, " Output ", pid_output
+          #if DISABLED(PID_OPENLOOP)
+            , STR_PID_DEBUG_PTERM, work_pid.Kp
+            , STR_PID_DEBUG_ITERM, work_pid.Ki
+            , STR_PID_DEBUG_DTERM, work_pid.Kd
+          #endif
+        );
+      }
+    #endif
+
+    return pid_output;
+  }
+
+#endif // PIDTEMPBED
+
+#if ENABLED(PIDTEMPCHAMBER)
+
+  float Temperature::get_pid_output_chamber() {
+
+    #if DISABLED(PID_OPENLOOP)
+
+      static PID_t work_pid{0};
+      static float temp_iState = 0, temp_dState = 0;
+      static bool pid_reset = true;
+      float pid_output = 0;
+      const float max_power_over_i_gain = float(MAX_CHAMBER_POWER) / temp_chamber.pid.Ki - float(MIN_CHAMBER_POWER),
+                  pid_error = temp_chamber.target - temp_chamber.celsius;
+
+      if (!temp_chamber.target || pid_error < -(PID_FUNCTIONAL_RANGE)) {
+        pid_output = 0;
+        pid_reset = true;
+      }
+      else if (pid_error > PID_FUNCTIONAL_RANGE) {
+        pid_output = MAX_CHAMBER_POWER;
+        pid_reset = true;
+      }
+      else {
+        if (pid_reset) {
+          temp_iState = 0.0;
+          work_pid.Kd = 0.0;
+          pid_reset = false;
+        }
+
+        temp_iState = constrain(temp_iState + pid_error, 0, max_power_over_i_gain);
+
+        work_pid.Kp = temp_chamber.pid.Kp * pid_error;
+        work_pid.Ki = temp_chamber.pid.Ki * temp_iState;
+        work_pid.Kd = work_pid.Kd + PID_K2 * (temp_chamber.pid.Kd * (temp_dState - temp_chamber.celsius) - work_pid.Kd);
+
+        temp_dState = temp_chamber.celsius;
+
+        pid_output = constrain(work_pid.Kp + work_pid.Ki + work_pid.Kd + float(MIN_CHAMBER_POWER), 0, MAX_CHAMBER_POWER);
+      }
+
+    #else // PID_OPENLOOP
+
+      const float pid_output = constrain(temp_chamber.target, 0, MAX_CHAMBER_POWER);
+
+    #endif // PID_OPENLOOP
+
+    #if ENABLED(PID_CHAMBER_DEBUG)
     {
       SERIAL_ECHO_MSG(
-        " PID_BED_DEBUG : Input ", temp_bed.celsius, " Output ", pid_output,
+        " PID_CHAMBER_DEBUG : Input ", temp_chamber.celsius, " Output ", pid_output
         #if DISABLED(PID_OPENLOOP)
-          STR_PID_DEBUG_PTERM, work_pid.Kp,
-          STR_PID_DEBUG_ITERM, work_pid.Ki,
-          STR_PID_DEBUG_DTERM, work_pid.Kd,
+          , STR_PID_DEBUG_PTERM, work_pid.Kp
+          , STR_PID_DEBUG_ITERM, work_pid.Ki
+          , STR_PID_DEBUG_DTERM, work_pid.Kd
         #endif
       );
     }
@@ -1051,7 +1153,7 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
     return pid_output;
   }
 
-#endif // PIDTEMPBED
+#endif // PIDTEMPCHAMBER
 
 /**
  * Manage heating activities for extruder hot-ends and a heated bed
@@ -1300,42 +1402,47 @@ void Temperature::manage_heater() {
       }
     #endif
 
+
+
+
+    #if ENABLED(PIDTEMPCHAMBER)
+      // PIDTEMPCHAMBER doens't support a CHAMBER_VENT yet.
+      temp_chamber.soft_pwm_amount = WITHIN(temp_chamber.celsius, CHAMBER_MINTEMP, CHAMBER_MAXTEMP) ? (int)get_pid_output_chamber() >> 1 : 0;
+    #else
     if (ELAPSED(ms, next_chamber_check_ms)) {
       next_chamber_check_ms = ms + CHAMBER_CHECK_INTERVAL;
 
       if (WITHIN(temp_chamber.celsius, CHAMBER_MINTEMP, CHAMBER_MAXTEMP)) {
-        if (flag_chamber_excess_heat) {
-          temp_chamber.soft_pwm_amount = 0;
-          #if ENABLED(CHAMBER_VENT)
-            if (!flag_chamber_off) MOVE_SERVO(CHAMBER_VENT_SERVO_NR, temp_chamber.celsius <= temp_chamber.target ? 0 : 90);
-          #endif
+          if (flag_chamber_excess_heat) {
+            temp_chamber.soft_pwm_amount = 0;
+            #if ENABLED(CHAMBER_VENT)
+              if (!flag_chamber_off) MOVE_SERVO(CHAMBER_VENT_SERVO_NR, temp_chamber.celsius <= temp_chamber.target ? 0 : 90);
+            #endif
+          }
+          else {
+            #if ENABLED(CHAMBER_LIMIT_SWITCHING)
+              if (temp_chamber.celsius >= temp_chamber.target + TEMP_CHAMBER_HYSTERESIS)
+                temp_chamber.soft_pwm_amount = 0;
+              else if (temp_chamber.celsius <= temp_chamber.target - (TEMP_CHAMBER_HYSTERESIS))
+                temp_chamber.soft_pwm_amount = (MAX_CHAMBER_POWER) >> 1;
+            #else
+              temp_chamber.soft_pwm_amount = temp_chamber.celsius < temp_chamber.target ? (MAX_CHAMBER_POWER) >> 1 : 0;
+            #endif
+            #if ENABLED(CHAMBER_VENT)
+              if (!flag_chamber_off) MOVE_SERVO(CHAMBER_VENT_SERVO_NR, 0);
+            #endif
+          }
         }
         else {
-          #if ENABLED(CHAMBER_LIMIT_SWITCHING)
-            if (temp_chamber.celsius >= temp_chamber.target + TEMP_CHAMBER_HYSTERESIS)
-              temp_chamber.soft_pwm_amount = 0;
-            else if (temp_chamber.celsius <= temp_chamber.target - (TEMP_CHAMBER_HYSTERESIS))
-              temp_chamber.soft_pwm_amount = (MAX_CHAMBER_POWER) >> 1;
-          #else
-            temp_chamber.soft_pwm_amount = temp_chamber.celsius < temp_chamber.target ? (MAX_CHAMBER_POWER) >> 1 : 0;
-          #endif
-          #if ENABLED(CHAMBER_VENT)
-            if (!flag_chamber_off) MOVE_SERVO(CHAMBER_VENT_SERVO_NR, 0);
-          #endif
+          temp_chamber.soft_pwm_amount = 0;
+          WRITE_HEATER_CHAMBER(LOW);
         }
-      }
-      else {
-        temp_chamber.soft_pwm_amount = 0;
-        WRITE_HEATER_CHAMBER(LOW);
-      }
 
-      #if ENABLED(THERMAL_PROTECTION_CHAMBER)
-        tr_state_machine[RUNAWAY_IND_CHAMBER].run(temp_chamber.celsius, temp_chamber.target, H_CHAMBER, THERMAL_PROTECTION_CHAMBER_PERIOD, THERMAL_PROTECTION_CHAMBER_HYSTERESIS);
-      #endif
-    }
-
-    // TODO: Implement true PID pwm
-    //temp_bed.soft_pwm_amount = WITHIN(temp_chamber.celsius, CHAMBER_MINTEMP, CHAMBER_MAXTEMP) ? (int)get_pid_output_chamber() >> 1 : 0;
+     }
+     #if ENABLED(THERMAL_PROTECTION_CHAMBER)
+       tr_state_machine[RUNAWAY_IND_CHAMBER].run(temp_chamber.celsius, temp_chamber.target, H_CHAMBER, THERMAL_PROTECTION_CHAMBER_PERIOD, THERMAL_PROTECTION_CHAMBER_HYSTERESIS);
+     #endif
+   #endif
 
   #endif // HAS_HEATED_CHAMBER
 
@@ -1425,7 +1532,7 @@ void Temperature::manage_heater() {
     SERIAL_ECHOPAIR_F_P(SP_B_STR, t.beta, 1);
     SERIAL_ECHOPAIR_F_P(SP_C_STR, t.sh_c_coeff, 9);
     SERIAL_ECHOPGM(" ; ");
-    serialprintPGM(
+    SERIAL_ECHOPGM_P(
       TERN_(TEMP_SENSOR_0_IS_CUSTOM, t_index == CTI_HOTEND_0 ? PSTR("HOTEND 0") :)
       TERN_(TEMP_SENSOR_1_IS_CUSTOM, t_index == CTI_HOTEND_1 ? PSTR("HOTEND 1") :)
       TERN_(TEMP_SENSOR_2_IS_CUSTOM, t_index == CTI_HOTEND_2 ? PSTR("HOTEND 2") :)
@@ -1686,7 +1793,7 @@ void Temperature::updateTemperaturesFromRawValues() {
 #endif
 
 // Init fans according to whether they're native PWM or Software PWM
-#ifdef ALFAWISE_UX0
+#ifdef BOARD_OPENDRAIN_MOSFETS
   #define _INIT_SOFT_FAN(P) OUT_WRITE_OD(P, FAN_INVERTING ? LOW : HIGH)
 #else
   #define _INIT_SOFT_FAN(P) OUT_WRITE(P, FAN_INVERTING ? LOW : HIGH)
@@ -1718,9 +1825,38 @@ void Temperature::updateTemperaturesFromRawValues() {
  * The manager is implemented by periodic calls to manage_heater()
  */
 void Temperature::init() {
+  // Init (and disable) SPI thermocouples
+  #if TEMP_SENSOR_0_IS_MAX6675 && PIN_EXISTS(MAX6675_CS)
+    OUT_WRITE(MAX6675_CS_PIN, HIGH);
+  #endif
+  #if TEMP_SENSOR_1_IS_MAX6675 && PIN_EXISTS(MAX6675_CS2)
+    OUT_WRITE(MAX6675_CS2_PIN, HIGH);
+  #endif
+  #if TEMP_SENSOR_0_IS_MAX6675 && PIN_EXISTS(MAX31855_CS)
+    OUT_WRITE(MAX31855_CS_PIN, HIGH);
+  #endif
+  #if TEMP_SENSOR_1_IS_MAX6675 && PIN_EXISTS(MAX31855_CS2)
+    OUT_WRITE(MAX31855_CS2_PIN, HIGH);
+  #endif
+  #if TEMP_SENSOR_0_IS_MAX6675 && PIN_EXISTS(MAX31865_CS)
+    OUT_WRITE(MAX31865_CS_PIN, HIGH);
+  #endif
+  #if TEMP_SENSOR_1_IS_MAX6675 && PIN_EXISTS(MAX31865_CS2)
+    OUT_WRITE(MAX31865_CS2_PIN, HIGH);
+  #endif
 
-  TERN_(TEMP_SENSOR_0_IS_MAX31865, max31865_0.begin(MAX31865_2WIRE)); // MAX31865_2WIRE, MAX31865_3WIRE, MAX31865_4WIRE
-  TERN_(TEMP_SENSOR_1_IS_MAX31865, max31865_1.begin(MAX31865_2WIRE));
+  #if HAS_MAX31865_TEMP
+    TERN_(TEMP_SENSOR_0_IS_MAX31865, max31865_0.begin(MAX31865_2WIRE)); // MAX31865_2WIRE, MAX31865_3WIRE, MAX31865_4WIRE
+    TERN_(TEMP_SENSOR_1_IS_MAX31865, max31865_1.begin(MAX31865_2WIRE));
+  #endif
+  #if HAS_MAX31855_TEMP
+    TERN_(TEMP_SENSOR_0_IS_MAX31855, max31855_0.begin());
+    TERN_(TEMP_SENSOR_1_IS_MAX31855, max31855_1.begin());
+  #endif
+  #if HAS_MAX6675_TEMP
+    TERN_(TEMP_SENSOR_0_IS_MAX6675, max6675_0.begin());
+    TERN_(TEMP_SENSOR_1_IS_MAX6675, max6675_1.begin());
+  #endif
 
   #if EARLY_WATCHDOG
     // Flag that the thermalManager should be running
@@ -1750,7 +1886,7 @@ void Temperature::init() {
   #endif
 
   #if HAS_HEATER_0
-    #ifdef ALFAWISE_UX0
+    #ifdef BOARD_OPENDRAIN_MOSFETS
       OUT_WRITE_OD(HEATER_0_PIN, HEATER_0_INVERTING);
     #else
       OUT_WRITE(HEATER_0_PIN, HEATER_0_INVERTING);
@@ -1780,7 +1916,7 @@ void Temperature::init() {
   #endif
 
   #if HAS_HEATED_BED
-    #ifdef ALFAWISE_UX0
+    #ifdef BOARD_OPENDRAIN_MOSFETS
       OUT_WRITE_OD(HEATER_BED_PIN, HEATER_BED_INVERTING);
     #else
       OUT_WRITE(HEATER_BED_PIN, HEATER_BED_INVERTING);
@@ -2234,7 +2370,7 @@ void Temperature::disable_all_heaters() {
   int Temperature::read_max_tc(TERN_(HAS_MULTI_MAX_TC, const uint8_t hindex/*=0*/)) {
     #define MAX6675_HEAT_INTERVAL 250UL
 
-    #if HAS_MAX31855
+    #if HAS_MAX31855_TEMP
       static uint32_t max_tc_temp = 2000;
       #define MAX_TC_ERROR_MASK    7
       #define MAX_TC_DISCARD_BITS 18
@@ -2284,65 +2420,91 @@ void Temperature::disable_all_heaters() {
     if (PENDING(ms, next_max_tc_ms[hindex])) return int(THERMO_TEMP(hindex));
     next_max_tc_ms[hindex] = ms + MAX6675_HEAT_INTERVAL;
 
-    #if HAS_MAX31865_TEMP
-      Adafruit_MAX31865 &maxref = THERMO_SEL(max31865_0, max31865_1);
-      const uint16_t max31865_ohms = (uint32_t(maxref.readRTD()) * THERMO_SEL(MAX31865_CALIBRATION_OHMS_0, MAX31865_CALIBRATION_OHMS_1)) >> 16;
-    #endif
-
     //
     // TODO: spiBegin, spiRec and spiInit doesn't work when soft spi is used.
     //
-    #if !THERMO_SEPARATE_SPI
+    #if !THERMO_SEPARATE_SPI && NO_THERMO_TEMPS
       spiBegin();
       spiInit(MAX_TC_SPEED_BITS);
     #endif
 
-    MAX6675_WRITE(LOW); // enable TT_MAX6675
-    DELAY_NS(100);      // Ensure 100ns delay
+    #if NO_THERMO_TEMPS
+      MAX6675_WRITE(LOW);  // enable TT_MAX6675
+      DELAY_NS(100);       // Ensure 100ns delay
+    #endif
+
+    max_tc_temp = 0;
 
     // Read a big-endian temperature value
-    max_tc_temp = 0;
-    for (uint8_t i = sizeof(max_tc_temp); i--;) {
-      max_tc_temp |= TERN(THERMO_SEPARATE_SPI, max_tc_spi.receive(), spiRec());
-      if (i > 0) max_tc_temp <<= 8; // shift left if not the last byte
-    }
+    #if NO_THERMO_TEMPS
+      for (uint8_t i = sizeof(max_tc_temp); i--;) {
+        max_tc_temp |= TERN(THERMO_SEPARATE_SPI, max_tc_spi.receive(), spiRec());
+        if (i > 0) max_tc_temp <<= 8; // shift left if not the last byte
+      }
+        MAX6675_WRITE(HIGH); // disable TT_MAX6675
+    #endif
 
-    MAX6675_WRITE(HIGH); // disable TT_MAX6675
+    #if HAS_MAX31855_TEMP
+      Adafruit_MAX31855 &max855ref = THERMO_SEL(max31855_0, max31855_1);
+      max_tc_temp = max855ref.readRaw32();
+    #endif
 
-    const uint8_t fault_31865 = TERN1(HAS_MAX31865_TEMP, maxref.readFault());
+    #if HAS_MAX31865_TEMP
+      Adafruit_MAX31865 &max865ref = THERMO_SEL(max31865_0, max31865_1);
+      #if ENABLED(LIB_USR_MAX31865)
+        max_tc_temp = max865ref.readRTD_with_Fault();
+      #endif
+    #endif
 
-    if (DISABLED(IGNORE_THERMOCOUPLE_ERRORS) && (max_tc_temp & MAX_TC_ERROR_MASK) && fault_31865) {
+    #if HAS_MAX6675_TEMP
+      MAX6675 &max6675ref = THERMO_SEL(max6675_0, max6675_1);
+      max_tc_temp = max6675ref.readRaw16();
+    #endif
+
+    #if ENABLED(LIB_ADAFRUIT_MAX31865)
+      const uint8_t fault_31865 = max865ref.readFault() & 0x3FU;
+    #endif
+
+    if (DISABLED(IGNORE_THERMOCOUPLE_ERRORS)
+      && TERN(LIB_ADAFRUIT_MAX31865, fault_31865, (max_tc_temp & MAX_TC_ERROR_MASK))
+    ) {
       max_tc_errors[hindex]++;
       if (max_tc_errors[hindex] > THERMOCOUPLE_MAX_ERRORS) {
         SERIAL_ERROR_START();
         SERIAL_ECHOPGM("Temp measurement error! ");
         #if MAX_TC_ERROR_MASK == 7
-          SERIAL_ECHOPGM("MAX31855 ");
-          if (max_tc_temp & 1)
+          SERIAL_ECHOPGM("MAX31855 Fault : (", max_tc_temp & 0x7, ") >> ");
+          if (max_tc_temp & 0x1)
             SERIAL_ECHOLNPGM("Open Circuit");
-          else if (max_tc_temp & 2)
+          else if (max_tc_temp & 0x2)
             SERIAL_ECHOLNPGM("Short to GND");
-          else if (max_tc_temp & 4)
+          else if (max_tc_temp & 0x4)
             SERIAL_ECHOLNPGM("Short to VCC");
-        #elif HAS_MAX31865_TEMP
+        #elif HAS_MAX31865
+          #if ENABLED(LIB_USR_MAX31865)
+            // At the present time we do not have the ability to set the MAX31865 HIGH threshold
+            // or thr LOW threshold, so no need to check for them, zero these bits out
+            const uint8_t fault_31865 = max865ref.readFault() & 0x3FU;
+          #endif
+          max865ref.clearFault();
           if (fault_31865) {
-            maxref.clearFault();
-            SERIAL_ECHOPAIR("MAX31865 Fault :(", fault_31865, ")  >>");
+            SERIAL_EOL();
+            SERIAL_ECHOLNPAIR("\nMAX31865 Fault :(", fault_31865, ")  >>");
             if (fault_31865 & MAX31865_FAULT_HIGHTHRESH)
               SERIAL_ECHOLNPGM("RTD High Threshold");
-            else if (fault_31865 & MAX31865_FAULT_LOWTHRESH)
+            if (fault_31865 & MAX31865_FAULT_LOWTHRESH)
               SERIAL_ECHOLNPGM("RTD Low Threshold");
-            else if (fault_31865 & MAX31865_FAULT_REFINLOW)
+            if (fault_31865 & MAX31865_FAULT_REFINLOW)
               SERIAL_ECHOLNPGM("REFIN- > 0.85 x Bias");
-            else if (fault_31865 & MAX31865_FAULT_REFINHIGH)
+            if (fault_31865 & MAX31865_FAULT_REFINHIGH)
               SERIAL_ECHOLNPGM("REFIN- < 0.85 x Bias - FORCE- open");
-            else if (fault_31865 & MAX31865_FAULT_RTDINLOW)
+            if (fault_31865 & MAX31865_FAULT_RTDINLOW)
               SERIAL_ECHOLNPGM("REFIN- < 0.85 x Bias - FORCE- open");
-            else if (fault_31865 & MAX31865_FAULT_OVUV)
+            if (fault_31865 & MAX31865_FAULT_OVUV)
               SERIAL_ECHOLNPGM("Under/Over voltage");
           }
         #else
-          SERIAL_ECHOLNPGM("MAX6675");
+          SERIAL_ECHOLNPGM("MAX6675 Open Circuit");
         #endif
 
         // Thermocouple open
@@ -2361,7 +2523,13 @@ void Temperature::disable_all_heaters() {
     #endif
 
     // Return the RTD resistance for MAX31865 for display in SHOW_TEMP_ADC_VALUES
-    TERN_(HAS_MAX31865_TEMP, max_tc_temp = max31865_ohms);
+    #if HAS_MAX31865_TEMP
+      #if ENABLED(LIB_ADAFRUIT_MAX31865)
+        max_tc_temp = (uint32_t(max865ref.readRTD()) * THERMO_SEL(MAX31865_CALIBRATION_OHMS_0, MAX31865_CALIBRATION_OHMS_1)) >> 16;
+      #elif ENABLED(LIB_USR_MAX31865)
+        max_tc_temp = (uint32_t(max_tc_temp) * THERMO_SEL(MAX31865_CALIBRATION_OHMS_0, MAX31865_CALIBRATION_OHMS_1)) >> 16;
+      #endif
+    #endif
 
     THERMO_TEMP(hindex) = max_tc_temp;
 
@@ -3047,7 +3215,8 @@ void Temperature::tick() {
     SERIAL_ECHOPGM(" /");
     SERIAL_PRINT(t, SFP);
     #if ENABLED(SHOW_TEMP_ADC_VALUES)
-      SERIAL_ECHOPAIR(" (", r * RECIPROCAL(OVERSAMPLENR));
+      // Temperature MAX SPI boards do not have an OVERSAMPLENR defined
+      SERIAL_ECHOPAIR(" (", TERN(NO_THERMO_TEMPS, false, k == 'T') ? r : r * RECIPROCAL(OVERSAMPLENR));
       SERIAL_CHAR(')');
     #endif
     delay(2);
@@ -3277,6 +3446,17 @@ void Temperature::tick() {
 
       return false;
     }
+
+    #if ENABLED(WAIT_FOR_HOTEND)
+      void Temperature::wait_for_hotend_heating(const uint8_t target_extruder) {
+        if (isHeatingHotend(target_extruder)) {
+          SERIAL_ECHOLNPGM("Wait for hotend heating...");
+          LCD_MESSAGEPGM(MSG_HEATING);
+          wait_for_hotend(target_extruder);
+          ui.reset_status();
+        }
+      }
+    #endif
 
   #endif // HAS_TEMP_HOTEND
 
