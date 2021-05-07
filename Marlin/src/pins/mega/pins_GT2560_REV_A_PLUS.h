@@ -32,3 +32,99 @@
 #if DISABLED(BLTOUCH)
   #define SERVO0_PIN  32
 #endif
+
+#if HAS_TMC_UART
+  /**
+   * TMC2208/TMC2209 stepper drivers
+   *
+   * Software serial
+   */
+
+  #ifndef X_SERIAL_TX_PIN
+    #define X_SERIAL_TX_PIN                   65
+  #endif
+  #ifndef X_SERIAL_RX_PIN
+    #define X_SERIAL_RX_PIN                   66
+  #endif
+  #ifndef X2_SERIAL_TX_PIN
+    #define X2_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef X2_SERIAL_RX_PIN
+    #define X2_SERIAL_RX_PIN                  -1
+  #endif
+
+  #ifndef Y_SERIAL_TX_PIN
+    #define Y_SERIAL_TX_PIN                   67
+  #endif
+  #ifndef Y_SERIAL_RX_PIN
+    #define Y_SERIAL_RX_PIN                   68
+  #endif
+  #ifndef Y2_SERIAL_TX_PIN
+    #define Y2_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef Y2_SERIAL_RX_PIN
+    #define Y2_SERIAL_RX_PIN                  -1
+  #endif
+
+  #ifndef Z_SERIAL_TX_PIN
+    #define Z_SERIAL_TX_PIN                   69
+  #endif
+  #ifndef Z_SERIAL_RX_PIN
+    #define Z_SERIAL_RX_PIN                   79
+  #endif
+  #ifndef Z2_SERIAL_TX_PIN
+    #define Z2_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef Z2_SERIAL_RX_PIN
+    #define Z2_SERIAL_RX_PIN                  -1
+  #endif
+
+  #ifndef E0_SERIAL_TX_PIN
+    #define E0_SERIAL_TX_PIN                  48
+  #endif
+  #ifndef E0_SERIAL_RX_PIN
+    #define E0_SERIAL_RX_PIN                  49
+  #endif
+  #ifndef E1_SERIAL_TX_PIN
+    #define E1_SERIAL_TX_PIN                  28
+  #endif
+  #ifndef E1_SERIAL_RX_PIN
+    #define E1_SERIAL_RX_PIN                  29
+  #endif
+  #ifndef E2_SERIAL_TX_PIN
+    #define E2_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E2_SERIAL_RX_PIN
+    #define E2_SERIAL_RX_PIN                  -1
+  #endif
+  #ifndef E3_SERIAL_TX_PIN
+    #define E3_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E3_SERIAL_RX_PIN
+    #define E3_SERIAL_RX_PIN                  -1
+  #endif
+  #ifndef E4_SERIAL_TX_PIN
+    #define E4_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E4_SERIAL_RX_PIN
+    #define E4_SERIAL_RX_PIN                  -1
+  #endif
+  #ifndef E5_SERIAL_TX_PIN
+    #define E5_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E5_SERIAL_RX_PIN
+    #define E5_SERIAL_RX_PIN                  -1
+  #endif
+  #ifndef E6_SERIAL_TX_PIN
+    #define E6_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E6_SERIAL_RX_PIN
+    #define E6_SERIAL_RX_PIN                  -1
+  #endif
+  #ifndef E7_SERIAL_TX_PIN
+    #define E7_SERIAL_TX_PIN                  -1
+  #endif
+  #ifndef E7_SERIAL_RX_PIN
+    #define E7_SERIAL_RX_PIN                  -1
+  #endif
+#endif
