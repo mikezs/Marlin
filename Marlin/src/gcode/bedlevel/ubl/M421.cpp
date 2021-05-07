@@ -54,7 +54,7 @@ void GcodeSuite::M421() {
              hasZ = parser.seen('Z'),
              hasQ = !hasZ && parser.seen('Q');
 
-  if (hasC) ij = ubl.find_closest_mesh_point_of_type(REAL, current_position);
+  if (hasC) ij = ubl.find_closest_mesh_point_of_type(CLOSEST, current_position);
 
   if (int(hasC) + int(hasI && hasJ) != 1 || !(hasZ || hasQ || hasN))
     SERIAL_ERROR_MSG(STR_ERR_M421_PARAMETERS);
@@ -62,7 +62,7 @@ void GcodeSuite::M421() {
     SERIAL_ERROR_MSG(STR_ERR_MESH_XY);
   else {
     float &zval = ubl.z_values[ij.x][ij.y];
-    zval = hasN ? MFNAN : parser.value_linear_units() + (hasQ ? zval : 0);
+    zval = hasN ? NAN : parser.value_linear_units() + (hasQ ? zval : 0);
     TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(ij.x, ij.y, zval));
   }
 }
