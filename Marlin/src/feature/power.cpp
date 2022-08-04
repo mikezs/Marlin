@@ -24,11 +24,13 @@
  * power.cpp - power control
  */
 
-#include "../inc/MarlinConfig.h"
+#include "../inc/MarlinConfigPre.h"
+
+#if EITHER(PSU_CONTROL, AUTO_POWER_CONTROL)
 
 #include "power.h"
 #include "../module/planner.h"
-#include "../module/stepper.h"
+#include "../module/stepper/indirection.h" // for restore_stepper_drivers
 #include "../module/temperature.h"
 #include "../MarlinCore.h"
 
@@ -40,12 +42,11 @@
   #include "../gcode/gcode.h"
 #endif
 
-#if EITHER(PSU_CONTROL, AUTO_POWER_CONTROL)
-
 Power powerManager;
 bool Power::psu_on;
 
 #if ENABLED(AUTO_POWER_CONTROL)
+  #include "../module/stepper.h"
   #include "../module/temperature.h"
 
   #if BOTH(USE_CONTROLLER_FAN, AUTO_POWER_CONTROLLERFAN)
@@ -97,6 +98,10 @@ void Power::power_on() {
  * Processes any PSU_POWEROFF_GCODE and makes a PS_OFF_SOUND if enabled.
  */
 void Power::power_off() {
+  SERIAL_ECHOLNPGM(STR_POWEROFF);
+
+  TERN_(HAS_SUICIDE, suicide());
+
   if (!psu_on) return;
 
   #ifdef PSU_POWEROFF_GCODE
