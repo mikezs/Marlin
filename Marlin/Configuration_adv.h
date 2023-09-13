@@ -1958,10 +1958,10 @@
    */
   //#define STATUS_COMBINE_HEATERS    // Use combined heater images instead of separate ones
   //#define STATUS_HOTEND_NUMBERLESS  // Use plain hotend icons instead of numbered ones (with 2+ hotends)
-  #define STATUS_HOTEND_INVERTED      // Show solid nozzle bitmaps when heating (Requires STATUS_HOTEND_ANIM for numbered hotends)
-  #define STATUS_HOTEND_ANIM          // Use a second bitmap to indicate hotend heating
-  #define STATUS_BED_ANIM             // Use a second bitmap to indicate bed heating
-  #define STATUS_CHAMBER_ANIM         // Use a second bitmap to indicate chamber heating
+  //#define STATUS_HOTEND_INVERTED      // Show solid nozzle bitmaps when heating (Requires STATUS_HOTEND_ANIM for numbered hotends)
+  //#define STATUS_HOTEND_ANIM          // Use a second bitmap to indicate hotend heating
+  //#define STATUS_BED_ANIM             // Use a second bitmap to indicate bed heating
+  //#define STATUS_CHAMBER_ANIM         // Use a second bitmap to indicate chamber heating
   //#define STATUS_CUTTER_ANIM        // Use a second bitmap to indicate spindle / laser active
   //#define STATUS_COOLER_ANIM        // Use a second bitmap to indicate laser cooling
   //#define STATUS_FLOWMETER_ANIM     // Use multiple bitmaps to indicate coolant flow
@@ -2541,7 +2541,7 @@
 
 // The ASCII buffer for serial input
 #define MAX_CMD_SIZE 96
-#define BUFSIZE 4
+#define BUFSIZE 16
 
 // Transmission to Host Buffer Size
 // To save 386 bytes of flash (and TX_BUFFER_SIZE+3 bytes of RAM) set to 0.
@@ -2550,13 +2550,13 @@
 // For debug-echo: 128 bytes for the optimal speed.
 // Other output doesn't need to be that speedy.
 // :[0, 2, 4, 8, 16, 32, 64, 128, 256]
-#define TX_BUFFER_SIZE 0
+#define TX_BUFFER_SIZE 64
 
 // Host Receive Buffer Size
 // Without XON/XOFF flow control (see SERIAL_XON_XOFF below) 32 bytes should be enough.
 // To use flow control, set this buffer size to at least 1024 bytes.
 // :[0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
-//#define RX_BUFFER_SIZE 1024
+#define RX_BUFFER_SIZE 1024
 
 #if RX_BUFFER_SIZE >= 1024
   // Enable to have the controller send XON/XOFF control characters to
@@ -2588,7 +2588,7 @@
  * Currently handles M108, M112, M410, M876
  * NOTE: Not yet implemented for all platforms.
  */
-//#define EMERGENCY_PARSER
+#define EMERGENCY_PARSER
 
 /**
  * Realtime Reporting (requires EMERGENCY_PARSER)
@@ -2617,7 +2617,7 @@
 //#define NO_TIMEOUTS 1000 // Milliseconds
 
 // Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
-//#define ADVANCED_OK
+#define ADVANCED_OK
 
 // Printrun may have trouble receiving long strings all at once.
 // This option inserts short delays between lines of serial output.

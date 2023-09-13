@@ -371,7 +371,7 @@
 #elif MB(MELZI)
   #include "sanguino/pins_MELZI.h"                  // ATmega644P, ATmega1284P              env:sanguino1284p_optimized env:sanguino1284p env:sanguino644p
 #elif MB(MELZI_V2)
-  #include "sanguino/pins_MELZI_V2.h"               // ATmega644P, ATmega1284P              env:sanguino1284p_optimized env:sanguino1284p env:sanguino644p env:melzi_optimized_extra_flags
+  #include "sanguino/pins_MELZI_V2.h"               // ATmega644P, ATmega1284P              env:sanguino1284p_optimized env:sanguino1284p env:sanguino644p env:melzi_optiboot_optimized_extra_flags
 #elif MB(MELZI_MAKR3D)
   #include "sanguino/pins_MELZI_MAKR3D.h"           // ATmega644P, ATmega1284P              env:sanguino1284p_optimized env:sanguino1284p env:sanguino644p
 #elif MB(MELZI_CREALITY)
