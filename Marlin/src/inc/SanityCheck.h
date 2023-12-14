@@ -254,6 +254,15 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
   #error "SERIAL_XON_XOFF and SERIAL_STATS_* features not supported on USB-native AVR devices."
 #endif
 
+// Serial DMA is only available for some STM32 MCUs
+#if ENABLED(SERIAL_DMA)
+  #if !HAL_STM32 || NONE(STM32F0xx, STM32F1xx, STM32F2xx, STM32F4xx, STM32F7xx)
+    #error "SERIAL_DMA is only available for some STM32 MCUs and requires HAL/STM32."
+  #elif !defined(HAL_UART_MODULE_ENABLED) || defined(HAL_UART_MODULE_ONLY)
+    #error "SERIAL_DMA requires STM32 platform HAL UART (without HAL_UART_MODULE_ONLY)."
+  #endif
+#endif
+
 /**
  * Multiple Stepper Drivers Per Axis
  */
@@ -2057,6 +2066,8 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
     #error "TEMP_SENSOR_REDUNDANT MAX Thermocouple with TEMP_SENSOR_REDUNDANT_SOURCE E0 requires TEMP_0_CS_PIN."
   #elif TEMP_SENSOR_IS_MAX_TC(REDUNDANT) && REDUNDANT_TEMP_MATCH(SOURCE, E1) && !PIN_EXISTS(TEMP_1_CS)
     #error "TEMP_SENSOR_REDUNDANT MAX Thermocouple with TEMP_SENSOR_REDUNDANT_SOURCE E1 requires TEMP_1_CS_PIN."
+  #elif TEMP_SENSOR_IS_MAX_TC(REDUNDANT) && REDUNDANT_TEMP_MATCH(SOURCE, E2) && !PIN_EXISTS(TEMP_2_CS)
+    #error "TEMP_SENSOR_REDUNDANT MAX Thermocouple with TEMP_SENSOR_REDUNDANT_SOURCE E2 requires TEMP_2_CS_PIN."
   #endif
 #endif
 
@@ -2089,7 +2100,9 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
       #error "TEMP_1_PIN or TEMP_1_CS_PIN not defined for this board."
     #endif
     #if HOTENDS > 2
-      #if TEMP_SENSOR_2 == 100
+      #if TEMP_SENSOR_IS_MAX_TC(2) && !PIN_EXISTS(TEMP_2_CS)
+        #error "TEMP_SENSOR_2 MAX thermocouple requires TEMP_2_CS_PIN."
+      #elif TEMP_SENSOR_2 == 100
         #error "TEMP_SENSOR_2 can't use Soc temperature sensor."
       #elif TEMP_SENSOR_2 == 0
         #error "TEMP_SENSOR_2 is required with 3 or more HOTENDS."
@@ -2749,7 +2762,7 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
   #endif
 #endif
 
-#if LCD_BACKLIGHT_TIMEOUT_MINS
+#if HAS_BACKLIGHT_TIMEOUT
   #if !HAS_ENCODER_ACTION && DISABLED(HAS_DWIN_E3V2)
     #error "LCD_BACKLIGHT_TIMEOUT_MINS requires an LCD with encoder or keypad."
   #elif ENABLED(NEOPIXEL_BKGD_INDEX_FIRST)
