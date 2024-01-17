@@ -555,6 +555,7 @@
         #endif
       #elif ENABLED(FYSETC_MINI_12864_2_1)
         #define NEOPIXEL_PIN         EXP1_06_PIN
+        #define NEOPIXEL2_PIN        P1_24
       #endif
 
     #else // !FYSETC_MINI_12864
