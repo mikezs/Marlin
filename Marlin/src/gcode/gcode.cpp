@@ -1225,7 +1225,9 @@ void GcodeSuite::process_subcommands_now(char * gcode) {
       PORT_REDIRECT(SerialMask::All);
       switch (busy_state) {
         case IN_HANDLER:
+          SERIAL_ECHO_MSG(STR_BUSY_PROCESSING_GCODE);
         case IN_PROCESS:
+          SERIAL_ECHO_MSG(STR_BUSY_PROCESSING_INPUT);
           SERIAL_ECHO_MSG(STR_BUSY_PROCESSING);
           TERN_(FULL_REPORT_TO_HOST_FEATURE, report_current_position_moving());
           break;
