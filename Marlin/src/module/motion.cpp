@@ -1302,6 +1302,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
      */
     inline void segmented_line_to_destination(const_feedRate_t fr_mm_s, const float segment_size=LEVELED_SEGMENT_LENGTH) {
 
+      SERIAL_ECHO_MSG("Started segmented_line_to_destination");
       const xyze_float_t diff = destination - current_position;
 
       // If the move is only in Z/E don't split up the move
@@ -1355,6 +1356,8 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
       // Since segment_distance is only approximate,
       // the final move must be to the exact destination.
       planner.buffer_line(destination, fr_mm_s, active_extruder, hints);
+
+      SERIAL_ECHO_MSG("Started segmented_line_to_destination");
     }
 
   #endif // SEGMENT_LEVELED_MOVES && !AUTO_BED_LEVELING_UBL
@@ -1368,6 +1371,7 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
    * Return true if 'current_position' was set to 'destination'
    */
   inline bool line_to_destination_cartesian() {
+    SERIAL_ECHO_MSG("Started line_to_destination_cartesian");
     const float scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
     #if HAS_MESH
       if (planner.leveling_active && planner.leveling_active_at_z(destination.z)) {
@@ -1399,6 +1403,8 @@ float get_move_distance(const xyze_pos_t &diff OPTARG(HAS_ROTATIONAL_AXES, bool 
     #endif // HAS_MESH
 
     planner.buffer_line(destination, scaled_fr_mm_s);
+
+    SERIAL_ECHO_MSG("Ended line_to_destination_cartesian");
     return false; // caller will update current_position
   }
 

@@ -48,6 +48,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
   if (!MOTION_CONDITIONS) return;
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_RUNNING));
+  SERIAL_ECHO_MSG("Started G0/G1");
 
   #ifdef G0_FEEDRATE
     feedRate_t old_feedrate;
@@ -116,4 +117,6 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
   #else
     TERN_(FULL_REPORT_TO_HOST_FEATURE, report_current_grblstate_moving());
   #endif
+
+  SERIAL_ECHO_MSG("Ended G0/G1");
 }
