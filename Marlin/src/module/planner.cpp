@@ -2944,6 +2944,7 @@ bool Planner::buffer_segment(const abce_pos_t &abce
   , const PlannerHints &hints/*=PlannerHints()*/
 ) {
 
+  SERIAL_ECHO_MSG(">Planner::buffer_segment");
   // If we are cleaning, do not accept queuing of movements
   if (cleaning_buffer_counter) return false;
 
@@ -3050,7 +3051,9 @@ bool Planner::buffer_segment(const abce_pos_t &abce
       , fr_mm_s, extruder, hints
   )) return false;
 
+  SERIAL_ECHO_MSG("stepper.wake_up()");
   stepper.wake_up();
+  SERIAL_ECHO_MSG("<Planner::buffer_segment");
   return true;
 } // buffer_segment()
 
